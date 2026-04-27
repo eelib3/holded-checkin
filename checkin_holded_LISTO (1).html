@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Check-in Holded Partner Day 2026</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f5f5f5;min-height:100vh}
+    .header{background:#1a1a2e;padding:14px 16px;text-align:center}
+    .header h1{color:#fff;font-size:15px;font-weight:bold}
+    .header p{color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px}
+    .container{padding:14px;max-width:420px;margin:0 auto}
+    .stats{display:flex;gap:8px;margin-bottom:14px}
+    .stat{flex:1;background:#fff;border-radius:8px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .stat-num{font-size:22px;font-weight:bold;color:#1a1a2e}
+    .stat-label{font-size:10px;color:#888;margin-top:2px}
+    .scan-area{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .cam-wrap{position:relative;width:100%;border-radius:8px;overflow:hidden;background:#000;margin-bottom:12px;display:none;aspect-ratio:1}
+    .cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+    canvas{display:none}
+    .cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .cam-frame{width:65%;aspect-ratio:1;border:2px solid rgba(255,255,255,0.9);border-radius:8px;box-shadow:0 0 0 1000px rgba(0,0,0,0.45)}
+    .scan-status{font-size:11px;color:#888;text-align:center;margin-bottom:10px;display:none}
+    .btn-scan{width:100%;background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;cursor:pointer;margin-bottom:10px}
+    .btn-stop{width:100%;background:#666;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;cursor:pointer;margin-bottom:10px;display:none}
+    .divider{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .divider span{font-size:11px;color:#ccc;white-space:nowrap}
+    .divider hr{flex:1;border:none;border-top:1px solid #eee}
+    .input-row{display:flex;gap:8px}
+    input[type=text]{flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
+    input[type=text]:focus{border-color:#1a1a2e}
+    .btn-validar{background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer}
+    .result{border-radius:10px;padding:16px;margin-bottom:14px;display:none;text-align:center}
+    .result.ok{background:#e8f5e9;border:1px solid #a5d6a7}
+    .result.error{background:#ffebee;border:1px solid #ef9a9a}
+    .result.duplicado{background:#fff8e1;border:1px solid #ffe082}
+    .result-icon{font-size:36px;margin-bottom:8px}
+    .result-name{font-size:18px;font-weight:bold;margin-bottom:4px}
+    .result-name.ok{color:#1b5e20}
+    .result-name.error{color:#b71c1c}
+    .result-name.duplicado{color:#e65100}
+    .result-msg{font-size:12px}
+    .result-msg.ok{color:#388e3c}
+    .result-msg.error{color:#c62828}
+    .result-msg.duplicado{color:#ef6c00}
+    .recent{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .recent h3{font-size:11px;color:#aaa;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
+    .recent-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+    .recent-row:last-child{border-bottom:none}
+    .recent-name{color:#1a1a2e;font-weight:500}
+    .recent-time{color:#aaa;font-size:11px}
+    .badge-ok{background:#e8f5e9;color:#2e7d32;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:5px}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Holded Partner Day 2026</h1>
+  <p>Check-in · Hotel W Barcelona</p>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="num-asistidos">-</div><div class="stat-label">Asistidos</div></div>
+    <div class="stat"><div class="stat-num" id="num-pendientes">-</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat"><div class="stat-num" id="num-total">-</div><div class="stat-label">Total</div></div>
+  </div>
+
+  <div class="scan-area">
+    <div class="cam-wrap" id="cam-wrap">
+      <video id="video" playsinline muted autoplay></video>
+      <canvas id="canvas"></canvas>
+      <div class="cam-overlay"><div class="cam-frame"></div></div>
+    </div>
+    <div class="scan-status" id="scan-status">Apunta el QR dentro del recuadro...</div>
+    <button class="btn-scan" id="btn-scan" onclick="iniciarCamara()">📷 Escanear QR con cámara</button>
+    <button class="btn-stop" id="btn-stop" onclick="detenerCamara()">✕ Detener cámara</button>
+    <div class="divider"><hr><span>o introduce manualmente</span><hr></div>
+    <div class="input-row">
+      <input type="text" id="qr-input" placeholder="Pega el código aquí...">
+      <button class="btn-validar" onclick="validarManual()">Validar</button>
+    </div>
+  </div>
+
+  <div class="result" id="result-box">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-name" id="result-name"></div>
+    <div class="result-msg" id="result-msg"></div>
+  </div>
+
+  <div class="recent" id="recent-box" style="display:none">
+    <h3>Últimas entradas</h3>
+    <div id="recent-list"></div>
+  </div>
+</div>
+
+<!-- jsQR funciona en iOS Safari y Chrome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+
+  // ⚠️ CAMBIA ESTA URL por la URL de tu Apps Script Web App
+  var APPS_SCRIPT_URL = "https://script.google.com/a/macros/holded.com/s/AKfycbwtnXuquKQS5-YaX5D7E0vXxhnXrkirwrjHxfDIgPPblkq8do_CcdRR7bT9jTsTuidBKg/exec";
+
+  var recientes = [];
+  var totalInvitados = 0;
+  var totalAsistidos = 0;
+  var stream = null;
+  var scanInterval = null;
+
+  function cargarStats() {
+    fetch(APPS_SCRIPT_URL + "?action=stats")
+      .then(function(r){ return r.json(); })
+      .then(function(r){
+        totalInvitados = r.total;
+        totalAsistidos = r.asistidos;
+        document.getElementById("num-total").textContent = r.total;
+        document.getElementById("num-asistidos").textContent = r.asistidos;
+        document.getElementById("num-pendientes").textContent = r.total - r.asistidos;
+      }).catch(function(){});
+  }
+
+  async function iniciarCamara() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      var video = document.getElementById("video");
+      video.srcObject = stream;
+      await video.play();
+      document.getElementById("cam-wrap").style.display = "block";
+      document.getElementById("scan-status").style.display = "block";
+      document.getElementById("btn-scan").style.display = "none";
+      document.getElementById("btn-stop").style.display = "block";
+      scanInterval = setInterval(function(){ escanearFrame(); }, 300);
+    } catch(e) {
+      alert("Error al acceder a la cámara: " + e.message + ". Usa el campo manual.");
+    }
+  }
+
+  function escanearFrame() {
+    var video = document.getElementById("video");
+    var canvas = document.getElementById("canvas");
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+    if (code) {
+      clearInterval(scanInterval);
+      detenerCamara();
+      procesarQR(code.data);
+    }
+  }
+
+  function detenerCamara() {
+    if (scanInterval) clearInterval(scanInterval);
+    if (stream) stream.getTracks().forEach(function(t){ t.stop(); });
+    document.getElementById("cam-wrap").style.display = "none";
+    document.getElementById("scan-status").style.display = "none";
+    document.getElementById("btn-scan").style.display = "block";
+    document.getElementById("btn-stop").style.display = "none";
+  }
+
+  function validarManual() {
+    var val = document.getElementById("qr-input").value.trim();
+    if (!val) return;
+    procesarQR(val);
+    document.getElementById("qr-input").value = "";
+  }
+
+  function procesarQR(data) {
+    fetch(APPS_SCRIPT_URL + "?action=validar&qr=" + encodeURIComponent(data))
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        var box = document.getElementById("result-box");
+        var icon = document.getElementById("result-icon");
+        var name = document.getElementById("result-name");
+        var msg  = document.getElementById("result-msg");
+        box.className = "result " + res.estado;
+        box.style.display = "block";
+        if (res.estado === "ok") {
+          icon.textContent = "✅";
+          name.className = "result-name ok"; name.textContent = res.nombre;
+          msg.className  = "result-msg ok";  msg.textContent  = "Acceso permitido · " + res.hora;
+          añadirReciente(res.nombre, res.hora);
+          totalAsistidos++;
+          document.getElementById("num-asistidos").textContent = totalAsistidos;
+          document.getElementById("num-pendientes").textContent = totalInvitados - totalAsistidos;
+        } else if (res.estado === "duplicado") {
+          icon.textContent = "⚠️";
+          name.className = "result-name duplicado"; name.textContent = res.nombre;
+          msg.className  = "result-msg duplicado";  msg.textContent  = "Este QR ya fue usado";
+        } else {
+          icon.textContent = "❌";
+          name.className = "result-name error"; name.textContent = "QR no válido";
+          msg.className  = "result-msg error";  msg.textContent  = "No encontrado en la lista";
+        }
+        setTimeout(function(){ box.style.display = "none"; iniciarCamara(); }, 3000);
+      });
+  }
+
+  function añadirReciente(nombre, hora) {
+    recientes.unshift({ nombre: nombre, hora: hora });
+    if (recientes.length > 5) recientes.pop();
+    var html = "";
+    recientes.forEach(function(r){
+      html += "<div class='recent-row'><span class='recent-name'>" + r.nombre + "<span class='badge-ok'>OK</span></span><span class='recent-time'>" + r.hora + "</span></div>";
+    });
+    document.getElementById("recent-list").innerHTML = html;
+    document.getElementById("recent-box").style.display = "block";
+  }
+
+  document.getElementById("qr-input").addEventListener("keypress", function(e){
+    if (e.key === "Enter") validarManual();
+  });
+
+  cargarStats();
+  setInterval(cargarStats, 30000);
+</script>
+</body>
+</html>
