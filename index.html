@@ -95,7 +95,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <script>
   var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwh1zsvGu2HFXpdkfPy1OpL6MdQpzTCiGVCp9SDUj43jvpbVIfS2NZ2mASPR7w1fbKq/exec";
   var TOKEN = "holded2026partnerday";
@@ -103,8 +103,7 @@
   var recientes = [];
   var totalInvitados = 0;
   var totalAsistidos = 0;
-  var stream = null;
-  var scanInterval = null;
+  var codeReader = null;
 
   function cargarStats() {
     fetch(APPS_SCRIPT_URL + "?action=stats&token=" + TOKEN)
@@ -120,46 +119,29 @@
 
   async function iniciarCamara() {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: { exact: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
-      });
-      var video = document.getElementById("video");
-      video.srcObject = stream;
-      await video.play();
+      codeReader = new ZXing.BrowserQRCodeReader();
       document.getElementById("cam-wrap").style.display = "block";
       document.getElementById("scan-status").style.display = "block";
       document.getElementById("btn-scan").style.display = "none";
       document.getElementById("btn-stop").style.display = "block";
-      scanInterval = setInterval(function(){ escanearFrame(); }, 150);
+
+      codeReader.decodeFromConstraints(
+        { video: { facingMode: "environment" } },
+        "video",
+        function(result, error) {
+          if (result) {
+            detenerCamara();
+            procesarQR(result.getText());
+          }
+        }
+      );
     } catch(e) {
       alert("Error al acceder a la cámara: " + e.message);
     }
   }
 
-  function escanearFrame() {
-    var video = document.getElementById("video");
-    var canvas = document.getElementById("canvas");
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
-    if (code) {
-      clearInterval(scanInterval);
-      detenerCamara();
-      procesarQR(code.data);
-    }
-  }
-
   function detenerCamara() {
-    if (scanInterval) clearInterval(scanInterval);
-    if (stream) stream.getTracks().forEach(function(t){ t.stop(); });
+    if (codeReader) codeReader.reset();
     document.getElementById("cam-wrap").style.display = "none";
     document.getElementById("scan-status").style.display = "none";
     document.getElementById("btn-scan").style.display = "block";
