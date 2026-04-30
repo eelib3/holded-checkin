@@ -51,6 +51,7 @@
     .recent-name{color:#1a1a2e;font-weight:500}
     .recent-time{color:#aaa;font-size:11px}
     .badge-ok{background:#e8f5e9;color:#2e7d32;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:5px}
+    .btn-siguiente{width:100%;background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;cursor:pointer;margin-top:12px}
   </style>
 </head>
 <body>
@@ -87,6 +88,7 @@
     <div class="result-icon" id="result-icon"></div>
     <div class="result-name" id="result-name"></div>
     <div class="result-msg" id="result-msg"></div>
+    <button class="btn-siguiente" onclick="siguiente()">Siguiente invitado →</button>
   </div>
 
   <div class="recent" id="recent-box" style="display:none">
@@ -182,9 +184,14 @@
           name.className = "result-name error"; name.textContent = "QR no válido";
           msg.className  = "result-msg error";  msg.textContent  = "No encontrado en la lista";
         }
-        setTimeout(function(){ box.style.display = "none"; iniciarCamara(); }, 5000);
+        // El staff pulsa el botón para continuar
       })
       .catch(function(e){ alert("Error de conexión: " + e.message); });
+  }
+
+  function siguiente() {
+    document.getElementById("result-box").style.display = "none";
+    iniciarCamara();
   }
 
   function añadirReciente(nombre, hora) {
@@ -202,6 +209,11 @@
     if (e.key === "Enter") validarManual();
   });
 
+  cargarStats();
+  setInterval(cargarStats, 30000);
+</script>
+</body>
+</html>
   cargarStats();
   setInterval(cargarStats, 30000);
 </script>
