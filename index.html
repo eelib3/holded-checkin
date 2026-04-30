@@ -182,7 +182,7 @@
           name.className = "result-name error"; name.textContent = "QR no válido";
           msg.className  = "result-msg error";  msg.textContent  = "No encontrado en la lista";
         }
-        setTimeout(function(){ box.style.display = "none"; iniciarCamara(); }, 3000);
+        setTimeout(function(){ box.style.display = "none"; iniciarCamara(); }, 5000);
       })
       .catch(function(e){ alert("Error de conexión: " + e.message); });
   }
