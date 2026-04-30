@@ -127,19 +127,17 @@
       document.getElementById("btn-scan").style.display = "none";
       document.getElementById("btn-stop").style.display = "block";
 
-      // Esperar 2 segundos para que la cámara se estabilice
-      setTimeout(function() {
-        codeReader.decodeFromConstraints(
-          { video: { facingMode: "environment" } },
-          "video",
-          function(result, error) {
-            if (result) {
-              detenerCamara();
-              procesarQR(result.getText());
-            }
+      var yaEscaneado = false;
+      codeReader.decodeFromConstraints(
+        { video: { facingMode: "environment" } },
+        "video",
+        function(result, error) {
+          if (result && !yaEscaneado) {
+            yaEscaneado = true;
+            procesarQR(result.getText());
           }
-        );
-      }, 2000);
+        }
+      );
     } catch(e) {
       alert("Error al acceder a la cámara: " + e.message);
     }
@@ -194,6 +192,7 @@
 
   function siguiente() {
     document.getElementById("result-box").style.display = "none";
+    detenerCamara();
     iniciarCamara();
   }
 
