@@ -121,7 +121,11 @@
   async function iniciarCamara() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+        video: { 
+          facingMode: { exact: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
       });
       var video = document.getElementById("video");
       video.srcObject = stream;
@@ -130,7 +134,7 @@
       document.getElementById("scan-status").style.display = "block";
       document.getElementById("btn-scan").style.display = "none";
       document.getElementById("btn-stop").style.display = "block";
-      scanInterval = setInterval(function(){ escanearFrame(); }, 300);
+      scanInterval = setInterval(function(){ escanearFrame(); }, 150);
     } catch(e) {
       alert("Error al acceder a la cámara: " + e.message);
     }
@@ -145,7 +149,7 @@
     var ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" });
+    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
     if (code) {
       clearInterval(scanInterval);
       detenerCamara();
