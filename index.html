@@ -127,16 +127,19 @@
       document.getElementById("btn-scan").style.display = "none";
       document.getElementById("btn-stop").style.display = "block";
 
-      codeReader.decodeFromConstraints(
-        { video: { facingMode: "environment" } },
-        "video",
-        function(result, error) {
-          if (result) {
-            detenerCamara();
-            procesarQR(result.getText());
+      // Esperar 2 segundos para que la cámara se estabilice
+      setTimeout(function() {
+        codeReader.decodeFromConstraints(
+          { video: { facingMode: "environment" } },
+          "video",
+          function(result, error) {
+            if (result) {
+              detenerCamara();
+              procesarQR(result.getText());
+            }
           }
-        }
-      );
+        );
+      }, 2000);
     } catch(e) {
       alert("Error al acceder a la cámara: " + e.message);
     }
@@ -209,11 +212,6 @@
     if (e.key === "Enter") validarManual();
   });
 
-  cargarStats();
-  setInterval(cargarStats, 30000);
-</script>
-</body>
-</html>
   cargarStats();
   setInterval(cargarStats, 30000);
 </script>
