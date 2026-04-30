@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Check-in Holded Partner Day 2026</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -29,7 +30,6 @@
     .divider hr{flex:1;border:none;border-top:1px solid #eee}
     .input-row{display:flex;gap:8px}
     input[type=text]{flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
-    input[type=text]:focus{border-color:#1a1a2e}
     .btn-validar{background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer}
     .result{border-radius:10px;padding:16px;margin-bottom:14px;display:none;text-align:center}
     .result.ok{background:#e8f5e9;border:1px solid #a5d6a7}
@@ -95,12 +95,10 @@
   </div>
 </div>
 
-<!-- jsQR funciona en iOS Safari y Chrome -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script>
-
-  // ⚠️ CAMBIA ESTA URL por la URL de tu Apps Script Web App
-  var APPS_SCRIPT_URL = "https://script.google.com/a/macros/holded.com/s/AKfycbwtnXuquKQS5-YaX5D7E0vXxhnXrkirwrjHxfDIgPPblkq8do_CcdRR7bT9jTsTuidBKg/exec";
+  var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwh1zsvGu2HFXpdkfPy1OpL6MdQpzTCiGVCp9SDUj43jvpbVIfS2NZ2mASPR7w1fbKq/exec";
+  var TOKEN = "holded2026partnerday";
 
   var recientes = [];
   var totalInvitados = 0;
@@ -109,7 +107,7 @@
   var scanInterval = null;
 
   function cargarStats() {
-    fetch(APPS_SCRIPT_URL + "?action=stats")
+    fetch(APPS_SCRIPT_URL + "?action=stats&token=" + TOKEN)
       .then(function(r){ return r.json(); })
       .then(function(r){
         totalInvitados = r.total;
@@ -134,7 +132,7 @@
       document.getElementById("btn-stop").style.display = "block";
       scanInterval = setInterval(function(){ escanearFrame(); }, 300);
     } catch(e) {
-      alert("Error al acceder a la cámara: " + e.message + ". Usa el campo manual.");
+      alert("Error al acceder a la cámara: " + e.message);
     }
   }
 
@@ -172,7 +170,7 @@
   }
 
   function procesarQR(data) {
-    fetch(APPS_SCRIPT_URL + "?action=validar&qr=" + encodeURIComponent(data))
+    fetch(APPS_SCRIPT_URL + "?action=validar&token=" + TOKEN + "&qr=" + encodeURIComponent(data))
       .then(function(r){ return r.json(); })
       .then(function(res){
         var box = document.getElementById("result-box");
@@ -199,7 +197,8 @@
           msg.className  = "result-msg error";  msg.textContent  = "No encontrado en la lista";
         }
         setTimeout(function(){ box.style.display = "none"; iniciarCamara(); }, 3000);
-      });
+      })
+      .catch(function(e){ alert("Error de conexión: " + e.message); });
   }
 
   function añadirReciente(nombre, hora) {
